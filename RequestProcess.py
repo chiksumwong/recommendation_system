@@ -10,23 +10,8 @@ from surprise import accuracy
 from surprise.model_selection import train_test_split
 from collections import defaultdict
 
-# get the oldest "RR" file path and name
-filePath = sorted(glob.glob(r"input/RR*"), reverse=False)[0]
-fileName = os.path.basename(filePath)
-
-timestamp = time.strftime("%H:%M:%S")
-print(timestamp + " Request processing start: " + fileName)
-
-# get the userID from "RR" file
-with open(filePath, 'r') as f:
-    rows = csv.reader(f)
-    row = next(rows)
-    inputID = row[0]
-    print(inputID)
-
-
 # print the result from predictions
-def get_items_recommendation_per_user(predictions, maxOutputItems=10):
+def get_items_recommendation(inputID, predictions, maxOutputItems=10):
     # First map the predictions to each user.
     top_n = defaultdict(list)
     for userID, itemID, true_r, est, _ in predictions:
@@ -39,14 +24,9 @@ def get_items_recommendation_per_user(predictions, maxOutputItems=10):
         
     # Print the recommended items for each user
     for userID, user_ratings in top_n.items():
-#         print(userID, [itemID for (itemID, _) in user_ratings])
         if inputID == userID:
             outputRR = ','.join(str(e[0]) for e in user_ratings)
-#             print(outputRR)
-
     return outputRR
-
-
 
 # create the output file
 def output_RR(inputID, outputRR):
@@ -66,29 +46,50 @@ def move_file(fileName):
 
 
 # get recommendation
-try:
-    file_path = os.path.expanduser('processed/currentModel.csv')
-    reader = Reader(line_format='user item rating', sep=',')
-    data = Dataset.load_from_file(file_path, reader=reader)
-    trainset = data.build_full_trainset()
+def getRecommendation():
 
-    # chose the algo
-    algo = SVD()
-    # train the model
-    algo.fit(trainset)
+    try:
+        # get the oldest "RR" file path and name
+        filePath = sorted(glob.glob(r"input/RR*"), reverse=False)[0]
+        fileName = os.path.basename(filePath)
 
-    # get predict
-    testset = trainset.build_anti_testset()
-    predictions = algo.test(testset)
-    outputRR = get_items_recommendation_per_user(predictions, maxOutputItems=10)
-    
-    # output result
-    output_RR(inputID, outputRR)
-    
-    # move file
-    move_file(fileName)
-except FileNotFoundError:
-    print("Current Model is not exist. Please put the UP file to input folder !") 
+        # start process the request
+        timestamp = time.strftime("%H:%M:%S")
+        print(timestamp + " Request processing start: " + fileName)
 
-timestamp = time.strftime("%H:%M:%S")
-print(timestamp + " Request processing end: " + fileName)
+        # get the userID from "RR" file
+        with open(filePath, 'r') as f:
+            rows = csv.reader(f)
+            row = next(rows)
+            inputID = row[0]
+
+    except FileNotFoundError:
+        print("RR file is not exist.") 
+
+        
+    try:
+        file_path = os.path.expanduser('processed/currentModel.csv')
+        reader = Reader(line_format='user item rating', sep=',')
+        data = Dataset.load_from_file(file_path, reader=reader)
+        trainset = data.build_full_trainset()
+
+        # chose the algo
+        algo = SVD()
+        # train the model
+        algo.fit(trainset)
+
+        # get predict
+        testset = trainset.build_anti_testset()
+        predictions = algo.test(testset)
+        outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
+        
+        # output result
+        output_RR(inputID, outputRR)
+        
+        # move file
+        move_file(fileName)
+    except FileNotFoundError:
+        print("Current Model is not exist. Please put the UP file to input folder !") 
+
+    timestamp = time.strftime("%H:%M:%S")
+    print(timestamp + " Request processing end: " + fileName)
