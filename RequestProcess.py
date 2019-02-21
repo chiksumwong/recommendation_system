@@ -3,6 +3,7 @@ import csv
 import glob
 import time
 import shutil
+from datetime import datetime
 
 from surprise import SVD
 from surprise import Dataset, Reader
@@ -23,17 +24,17 @@ def get_items_recommendation(inputID, predictions, maxOutputItems=10):
         top_n[userID] = user_ratings[:maxOutputItems]
         
     # Print the recommended items for each user
+ 
     for userID, user_ratings in top_n.items():
         if inputID == userID:
-            outputRR = ','.join(str(e[0]) for e in user_ratings)
-    return outputRR
+            outputResult = ','.join(str(e[0]) for e in user_ratings)
+
+    return outputResult
 
 # create the output file
-def output_RR(inputID, outputRR):
-    timestamp = time.strftime("%Y%m%d%H%M%S")
-    fileName = "output/RR" + timestamp + "out.csv"
-
-    with open(fileName, 'w', newline='') as f:
+def output_RR(fileNameBase, inputID, outputRR):
+    filePath = "output/" + fileNameBase + "out.csv"
+    with open(filePath, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([inputID, outputRR])
 
@@ -52,6 +53,7 @@ def getRecommendation():
         # get the oldest "RR" file path and name
         filePath = sorted(glob.glob(r"input/RR*"), reverse=False)[0]
         fileName = os.path.basename(filePath)
+        fileNameBase = os.path.splitext(fileName)[0]
 
         # start process the request
         timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
@@ -81,10 +83,14 @@ def getRecommendation():
         # get predict
         testset = trainset.build_anti_testset()
         predictions = algo.test(testset)
-        outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
-        
+
+        try:
+            outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
+        except UnboundLocalError:
+            print("It is not the recommendation for user! Please add the user preference file.")
+    
         # output result
-        output_RR(inputID, outputRR)
+        output_RR(fileNameBase, inputID, outputRR)
         
         # move file
         move_file(fileName)

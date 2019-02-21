@@ -36,6 +36,11 @@ def updateModel():
     with open('processed/currentModel.csv', 'w', newline='') as rowFile:
         rowFileWriter = csv.writer(rowFile)
         combined = []  
+
+        # check the row wether is null or repeat
+
+
+        
         for cm_row in currentModelList:
             combined_row = []
             combined_row.extend(cm_row)  
