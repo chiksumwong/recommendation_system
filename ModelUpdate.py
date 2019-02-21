@@ -4,6 +4,7 @@ import glob
 import time
 import shutil
 from datetime import datetime
+import pandas as pd
 
 def updateModel():
     # read the oldest file name
@@ -30,16 +31,26 @@ def updateModel():
     with open(filePath, 'r') as f:
         reader = csv.reader(f) 
         upList = list(reader)
-        
+    
+        # check the row wether is null or repeat
+        # Creating a dataframe object from upList
+        df = pd.DataFrame(upList)
+        # dropping ALL duplicte values 
+        df.drop_duplicates(keep='first', inplace=True)
+        # remove all row which contain null
+        print("duplicte", df)
+        df = df.dropna()
+        # change the type from float to int
+        # df = df.astype(int)
+        # change the data from dataframe to list
+        print("Remove all null", df)
+        upList = df.values.tolist()
+        print("upList", upList)
 
     # combined 2 file
     with open('processed/currentModel.csv', 'w', newline='') as rowFile:
         rowFileWriter = csv.writer(rowFile)
         combined = []  
-
-        # check the row wether is null or repeat
-
-
         
         for cm_row in currentModelList:
             combined_row = []
