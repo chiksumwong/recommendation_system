@@ -3,13 +3,14 @@ import csv
 import glob
 import time
 import shutil
+from datetime import datetime
 
 def updateModel():
     # read the oldest file name
     filePath = sorted(glob.glob(r"input/UP*"), reverse=False)[0]
     fileName = os.path.basename(filePath)
 
-    timestamp = time.strftime("%H:%M:%S")
+    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Model updating start: " + fileName)
 
     # get the data from currentModel.csv, if it is not exist, the new one will be created
@@ -64,5 +65,5 @@ def updateModel():
     processedPath = "processed/" + fileName
     shutil.move(inputPath, processedPath)
 
-    timestamp = time.strftime("%H:%M:%S")
+    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Model updating end: " + fileName)

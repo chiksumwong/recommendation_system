@@ -54,7 +54,7 @@ def getRecommendation():
         fileName = os.path.basename(filePath)
 
         # start process the request
-        timestamp = time.strftime("%H:%M:%S")
+        timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
         print(timestamp + " Request processing start: " + fileName)
 
         # get the userID from "RR" file
@@ -91,5 +91,5 @@ def getRecommendation():
     except FileNotFoundError:
         print("Current Model is not exist. Please put the UP file to input folder !") 
 
-    timestamp = time.strftime("%H:%M:%S")
+    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Request processing end: " + fileName)
