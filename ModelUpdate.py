@@ -3,8 +3,8 @@ import csv
 import glob
 import time
 import shutil
-from datetime import datetime
 import pandas as pd
+from datetime import datetime
 
 def updateModel():
     # read the oldest file name
@@ -26,41 +26,28 @@ def updateModel():
         with open('processed/currentModel.csv', 'r') as f:
             reader = csv.reader(f)
             currentModelList = list(reader)
-
-    # get the data from UP file        
-    with open(filePath, 'r') as f:
-        reader = csv.reader(f) 
-        upList = list(reader)
-    
-        # check the row wether is null or repeat
-        # Creating a dataframe object from upList
-        df = pd.DataFrame(upList)
-        # dropping ALL duplicte values 
-        df.drop_duplicates(keep='first', inplace=True)
-        # remove all row which contain null
-        print("duplicte", df)
-        df = df.dropna()
-        # change the type from float to int
-        # df = df.astype(int)
-        # change the data from dataframe to list
-        print("Remove all null", df)
-        upList = df.values.tolist()
-        print("upList", upList)
+ 
+    # get the upList from UP file
+    df = pd.read_csv(filePath) 
+    df.drop_duplicates(keep='first', inplace=True)  # dropping ALL duplicte values 
+    df = df.dropna()                                # remove all row which contain null
+    df = df.astype(int)                             # change the type from float to int
+    df = df.astype(str)                             # change the type from float to int
+    upList = df.values.tolist()                     # change the data from dataframe to list
 
     # combined 2 file
     with open('processed/currentModel.csv', 'w', newline='') as rowFile:
         rowFileWriter = csv.writer(rowFile)
         combined = []  
-        
+        # if user change the score, update the score in current model
         for cm_row in currentModelList:
             combined_row = []
             combined_row.extend(cm_row)  
-            
             for up_row in upList:
                 if combined_row[0] == up_row[0] and combined_row[1] == up_row[1]:
-                    combined_row[2] = up_row[2]   
+                    combined_row[2] = up_row[2]
             combined.append(combined_row)
-        
+        # add the row to current if the row is not exist in current model
         for up_row in upList:
             found = False
             for cm_row in currentModelList:
@@ -69,12 +56,10 @@ def updateModel():
                     break
             if found == False:
                 combined.append(up_row)
-                
         # sort the combined data        
         combined = sorted(combined, reverse=False)
         for cb_row in combined:
             rowFileWriter.writerow(cb_row)
-
 
     # move the UP file to processed file 
     inputPath = "input/" + fileName

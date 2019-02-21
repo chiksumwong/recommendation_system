@@ -17,18 +17,14 @@ def get_items_recommendation(inputID, predictions, maxOutputItems=10):
     top_n = defaultdict(list)
     for userID, itemID, true_r, est, _ in predictions:
         top_n[userID].append((itemID, est))
-
     # Then sort the predictions for each user and retrieve the k highest ones.
     for userID, user_ratings in top_n.items():
         user_ratings.sort(key=lambda x: x[1], reverse=True)
-        top_n[userID] = user_ratings[:maxOutputItems]
-        
+        top_n[userID] = user_ratings[:maxOutputItems]    
     # Print the recommended items for each user
- 
     for userID, user_ratings in top_n.items():
         if inputID == userID:
             outputResult = ','.join(str(e[0]) for e in user_ratings)
-
     return outputResult
 
 # create the output file
@@ -38,17 +34,14 @@ def output_RR(fileNameBase, inputID, outputRR):
         writer = csv.writer(f)
         writer.writerow([inputID, outputRR])
 
-
 # remove the file from input folder to processed folder
 def move_file(fileName):
     inputPath = "input/" + fileName
     processedPath = "processed/" + fileName
     shutil.move(inputPath, processedPath)
 
-
 # get recommendation
 def getRecommendation():
-
     try:
         # get the oldest "RR" file path and name
         filePath = sorted(glob.glob(r"input/RR*"), reverse=False)[0]
@@ -67,28 +60,24 @@ def getRecommendation():
 
     except FileNotFoundError:
         print("RR file is not exist.") 
-
         
     try:
         file_path = os.path.expanduser('processed/currentModel.csv')
         reader = Reader(line_format='user item rating', sep=',')
         data = Dataset.load_from_file(file_path, reader=reader)
         trainset = data.build_full_trainset()
-
         # chose the algo
         algo = SVD()
         # train the model
         algo.fit(trainset)
-
         # get predict
         testset = trainset.build_anti_testset()
         predictions = algo.test(testset)
-
         try:
             outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
         except UnboundLocalError:
             print("It is not the recommendation for user! Please add the user preference file.")
-    
+        
         # output result
         output_RR(fileNameBase, inputID, outputRR)
         
