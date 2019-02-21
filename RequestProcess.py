@@ -3,6 +3,7 @@ import csv
 import glob
 import time
 import shutil
+import sys
 from datetime import datetime
 
 from surprise import SVD
@@ -59,7 +60,7 @@ def getRecommendation():
             inputID = row[0]
 
     except FileNotFoundError:
-        print("RR file is not exist.") 
+        print("Request process file is not exist.") 
         
     try:
         file_path = os.path.expanduser('processed/currentModel.csv')
@@ -76,8 +77,9 @@ def getRecommendation():
         try:
             outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
         except UnboundLocalError:
-            print("It is not the recommendation for user! Please add the user preference file.")
-        
+            print("The request process stop!\nIt is not the recommendation for user! Please add related user preference file.")
+            sys.exit(0)
+
         # output result
         output_RR(fileNameBase, inputID, outputRR)
         
@@ -85,6 +87,7 @@ def getRecommendation():
         move_file(fileName)
     except FileNotFoundError:
         print("Current Model is not exist. Please put the UP file to input folder !") 
+        sys.exit(0)
 
     timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Request processing end: " + fileName)
