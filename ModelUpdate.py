@@ -6,13 +6,13 @@ import shutil
 import pandas as pd
 from datetime import datetime
 
+"""
+Update current model function 
+"""
 def updateModel():
     # read the oldest file name
     filePath = sorted(glob.glob(r"input/UP*"), reverse=False)[0]
     fileName = os.path.basename(filePath)
-
-    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
-    print(timestamp + " Model updating start: " + fileName)
 
     # get the data from currentModel.csv, if it is not exist, the new one will be created
     try:
@@ -26,14 +26,18 @@ def updateModel():
         with open('processed/currentModel.csv', 'r') as f:
             reader = csv.reader(f)
             currentModelList = list(reader)
- 
-    # get the upList from UP file
+
+    # get the upList from UP file and remove the null and repeat row
     df = pd.read_csv(filePath) 
-    df.drop_duplicates(keep='first', inplace=True)  # dropping ALL duplicte values 
+    df.drop_duplicates(keep='first', inplace=True)  # dropping all repeat row 
     df = df.dropna()                                # remove all row which contain null
     df = df.astype(int)                             # change the type from float to int
-    df = df.astype(str)                             # change the type from float to int
+    df = df.astype(str)                             # change the type from int to str
     upList = df.values.tolist()                     # change the data from dataframe to list
+
+    # start updating model
+    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+    print(timestamp + " Model updating start: " + fileName) 
 
     # combined 2 file
     with open('processed/currentModel.csv', 'w', newline='') as rowFile:
@@ -56,7 +60,7 @@ def updateModel():
                     break
             if found == False:
                 combined.append(up_row)
-        # sort the combined data        
+        # sort the combined data and write in current model
         combined = sorted(combined, reverse=False)
         for cb_row in combined:
             rowFileWriter.writerow(cb_row)
@@ -66,5 +70,6 @@ def updateModel():
     processedPath = "processed/" + fileName
     shutil.move(inputPath, processedPath)
 
+    # end updating model
     timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Model updating end: " + fileName)

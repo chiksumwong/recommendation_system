@@ -12,36 +12,44 @@ from surprise import accuracy
 from surprise.model_selection import train_test_split
 from collections import defaultdict
 
-# print the result from predictions
+"""
+Print the result from predictions function 
+"""
 def get_items_recommendation(inputID, predictions, maxOutputItems=10):
-    # First map the predictions to each user.
+    # map the predictions to each user.
     top_n = defaultdict(list)
     for userID, itemID, true_r, est, _ in predictions:
         top_n[userID].append((itemID, est))
-    # Then sort the predictions for each user and retrieve the k highest ones.
+    # sort the predictions for each user and related items(defult max is 10).
     for userID, user_ratings in top_n.items():
         user_ratings.sort(key=lambda x: x[1], reverse=True)
         top_n[userID] = user_ratings[:maxOutputItems]    
-    # Print the recommended items for each user
+    # get the recommended items by userID(inputID)
     for userID, user_ratings in top_n.items():
         if inputID == userID:
             outputResult = ','.join(str(e[0]) for e in user_ratings)
     return outputResult
 
-# create the output file
+"""
+Create the output file function 
+"""
 def output_RR(fileNameBase, inputID, outputRR):
     filePath = "output/" + fileNameBase + "out.csv"
     with open(filePath, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([inputID, outputRR])
 
-# remove the file from input folder to processed folder
+"""
+Remove the file from input folder to processed folder function 
+"""
 def move_file(fileName):
     inputPath = "input/" + fileName
     processedPath = "processed/" + fileName
     shutil.move(inputPath, processedPath)
 
-# get recommendation
+"""
+Get recommendation function 
+"""
 def getRecommendation():
     try:
         # get the oldest "RR" file path and name
@@ -74,6 +82,7 @@ def getRecommendation():
         # get predict
         testset = trainset.build_anti_testset()
         predictions = algo.test(testset)
+        
         try:
             outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
         except UnboundLocalError:
@@ -89,5 +98,6 @@ def getRecommendation():
         print("Current Model is not exist. Please put the UP file to input folder !") 
         sys.exit(0)
 
+    # end process the request
     timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
     print(timestamp + " Request processing end: " + fileName)
