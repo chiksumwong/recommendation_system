@@ -28,11 +28,13 @@ def updateModel():
             currentModelList = list(reader)
 
     # get the upList from UP file and remove the null and repeat row
-    df = pd.read_csv(filePath) 
+    df = pd.read_csv(filePath, names=['uid','iid','score']) 
     df.drop_duplicates(keep='first', inplace=True)  # dropping all repeat row 
     df = df.dropna()                                # remove all row which contain null
-    df = df.astype(int)                             # change the type from float to int
-    df = df.astype(str)                             # change the type from int to str
+    df['uid'] =  df['uid'].astype('int')
+    df['iid'] =  df['iid'].astype('int')
+    df = df.astype(str)                            
+    df['score'] = df['score'].str.replace('.0', '')
     upList = df.values.tolist()                     # change the data from dataframe to list
 
     # start updating model
@@ -61,7 +63,7 @@ def updateModel():
             if found == False:
                 combined.append(up_row)
         # sort the combined data and write in current model
-        combined = sorted(combined, reverse=False)
+        combined = sorted(combined, key=lambda x: x[0], reverse=False)
         for cb_row in combined:
             rowFileWriter.writerow(cb_row)
 
