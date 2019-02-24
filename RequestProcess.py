@@ -104,5 +104,7 @@ def getRecommendation():
             move_file(fileName)
 
     except FileNotFoundError:
-        print("Current Model is not exist. Please put the UP file to input folder !") 
+        timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+        print(timestamp + " Request processing end: " + fileName)
+        print("Current Model does not exist! Please put the UP file into the input folder and restart the program again!") 
         sys.exit(0)
