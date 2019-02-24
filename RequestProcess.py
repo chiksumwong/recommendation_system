@@ -85,19 +85,24 @@ def getRecommendation():
         
         try:
             outputRR = get_items_recommendation(inputID, predictions, maxOutputItems=10)
-        except UnboundLocalError:
-            print("The request process stop!\nIt is not the recommendation for user! Please add related user preference file.")
-            sys.exit(0)
 
-        # output result
-        output_RR(fileNameBase, inputID, outputRR)
+            # output result
+            output_RR(fileNameBase, inputID, outputRR)
         
-        # move file
-        move_file(fileName)
+            # move file
+            move_file(fileName)
+
+            # end process the request
+            timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+            print(timestamp + " Request processing end: " + fileName)
+
+        except UnboundLocalError:
+            print("It is not the recommendation for userID " + inputID + " ! Please add related user preference file then get request again.")
+            # end process the request
+            timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
+            print(timestamp + " Request processing end: " + fileName)
+            move_file(fileName)
+
     except FileNotFoundError:
         print("Current Model is not exist. Please put the UP file to input folder !") 
         sys.exit(0)
-
-    # end process the request
-    timestamp = datetime.utcnow().strftime('%H:%M:%S.%f')[:-3]
-    print(timestamp + " Request processing end: " + fileName)
