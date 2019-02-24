@@ -6,7 +6,7 @@ import shutil
 import sys
 from datetime import datetime
 
-from surprise import SVD
+from surprise import SVDpp
 from surprise import Dataset, Reader
 from surprise import accuracy
 from surprise.model_selection import train_test_split
@@ -76,7 +76,7 @@ def getRecommendation():
         data = Dataset.load_from_file(file_path, reader=reader)
         trainset = data.build_full_trainset()
         # chose the algo
-        algo = SVD()
+        algo = SVDpp()
         # train the model
         algo.fit(trainset)
         # get predict
